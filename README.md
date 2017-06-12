@@ -16,5 +16,5 @@ Beweb 12 06 17
 - View societe resume
 
 
-<img src="assets/img/screen1.png?raw=true" />
-<img src="assets/img/screen2.png?raw=true" />
+<img src="../assets/img/screen1.png?raw=true" />
+<img src="../assets/img/screen2.png?raw=true" />
