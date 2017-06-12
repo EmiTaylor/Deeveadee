@@ -1,4 +1,3 @@
-
 <div class="container" style="margin-top:20px;">
     <div class="jumbotron">
       <h1>Bye, world!</h1>

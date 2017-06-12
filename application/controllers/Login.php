@@ -6,18 +6,19 @@ class Login extends CI_Controller {
 	public function index()
 	{
 		$this->load->library('session');
+		$this->load->library('form_validation');
 		$this->form_validation->set_rules('username', 'Username', 'trim|required');
         $this->form_validation->set_rules('password', 'Password', 'trim|required|callback_login');
-	        if ($this->form_validation->run()==FALSE) {
-	            $this->load->view('login');
-	        } else {
-	            redirect(base_url('index.php/home'), 'refresh');
+	        if ($this->form_validation->run()==TRUE) {
+	            $this->load->model('Login_Model');
+				$status = $this->auth->log();
 	        }
-
         $this->load->view('templates/header');
+		$this->load->view('login');
         $this->load->view('templates/footer');
 	}
-    public function log($password) {
+    public function log($password, $username) {
+
         $username = $this->input->post('username');
         $result = $this->login->login($username, $password);
             if($result) {

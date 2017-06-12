@@ -1,21 +1,29 @@
 <?php
-
-
 class Login_Model extends CI_Model {
 
-	public function login($username, $password)
-	{
-        $query = $this->db->query('SELECT id, username, email,
-                                    password, gender, created_date, phone, bio, picture FROM Users');
-        $this->db->where('username', $username);
-        $this->db->where('password', md5($password));
-        // $this->db->limit(1);
+	private $table = 'Users';
 
-        $query = $this->db->log();
-        // if ($query->num_rows()==1) {
-        //     return $query->result();
-        // } else {
-        //     return FALSE;
-        // }
-    }
+	public function log() {
+
+		$username->$this->input->POST('username');
+		$password->$this->input->POST('password');
+
+		$this->db->where('username', $username);
+		$query = $this->db->get($this->table);
+
+		if ($query->num_rows()) {
+			// found row by username
+			$row = $query->row_array();
+
+			//check password
+			if ($row['password'] == sha1($password)) {
+				return ERR_NONE;
+			}
+			//password not match
+			return ERR_INVALID_PASSWORD;
+		} else {
+			// if not found
+			return ERR_INVALID_USERNAME;
+		}
+	}
 }
