@@ -48,5 +48,13 @@ class Landing_Model extends CI_Model {
         $this->load->view('societe/view');
         $this->load->view('templates/footer');
 	}
-
+    public function view($numD = NULL){
+        $data['Dvd'] = $this->Deeveadee_Model->getByNum($numD);
+        if (empty($data['Dvd'])) {
+            show_404();
+        }
+        $this->load->view('templates/header');
+        $this->load->view('societe/view', $data);
+        $this->load->view('templates/footer');
+    }
 }
