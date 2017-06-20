@@ -1,69 +1,93 @@
 <?php
+
+
+
 /*
  * User Controller
  */
 class User extends CI_Controller {
 
     public function __construct() {
-       parent::__construct();
-       $this->load->model('User_Model');
-       $this->load->helper('url_helper');
+        $this->load->database();
+        parent::__construct();
+        $this->load->model('User_Model');
+        $this->load->helper(['form', 'url']);
+        $this->load->library(['session', 'form_validation']);
    }
-    /**
-    * Check if the user is logged in, if he's not,
-    * send him to the login page
-    * @return void
-    */
-	function index()
-	{
-        $data['title'] = 'Login';
-		if($this->session->userdata('is_logged_in')){
-			redirect('landing_page');
-        }else{
-        	$this->load->view('login');
-        }
-	}
-    /**
-    * encript the password
-    * @return mixed
-    */
-    function __encrip_password($password) {
-        return md5($password);
+   public function login() {
+   $config = array(
+       array(
+           'field' => 'password',
+           'label' => 'password',
+           'rules' => 'required',
+           'errors' => array(
+            'required' => 'Saisissez un mot de passe, please',
+           ),
+       ),
+       array(
+           'field' => 'email',
+           'label' => 'email',
+           'rules' => 'required',
+           'errors' => array(
+             'required' => 'Saisissez une adresse email, please',
+           ),
+       )
+   );
+       $this->form_validation->set_rules($config);
+
+       if ($this->form_validation->run()) {
+           $user = $this->UserModel->getByEmail($this->input->post('email'));
+           if (!empty($user) and password_verify($this->input->post('password'), $user->passwordU)) {
+               $userdata = array(
+                   'email'     => $user->email,
+                   'role'      => $user->role,
+                   'logged_in' => true
+               );
+               $this->session->set_userdata($userdata);
+               redirect('/');
+           }
+       }
+       $this->load->view('login');
+   }
+    public function logout() {
+       $this->session->sess_destroy();
+       redirect('/');
     }
-    /**
-    * check the username and the password with the database
-    * @return void
-    */
-	function validate_credentials()
-	{
-		$this->load->model('User_Model');
-		$username = $this->input->post('username');
-		$password = $this->__encrip_password($this->input->post('password'));
-		$is_valid = $this->User_model->validate($username, $password);
-
-		if($is_valid)
-		{
-			$data = array(
-				'username' => $username,
-				'is_logged_in' => true
-			);
-			$this->session->set_userdata($data);
-			redirect('landing_page');
-		}
-		else // incorrect username or password
-		{
-			$data['message_error'] = TRUE;
-			$this->load->view('login', $data);
-		}
-	}
-
-	/**
-    * Destroy the session, and logout the user.
-    * @return void
-    */
-	function logout()
-	{
-		$this->session->sess_destroy();
-		redirect('landing_page');
-	}
+    public function register() {
+        $config = array(
+           array(
+               'field' => 'password',
+               'label' => 'password',
+               'rules' => 'required',
+               'errors' => array(
+                   'required' => 'Mot de passe please',
+               ),
+           ),
+           array(
+               'field' => 'email',
+               'label' => 'email',
+               'rules' => 'required|callback_userNotExists',
+               'errors' => array(
+                   'required' => 'Adresse email please',
+                   'userNotExists' => 'Cette adresse email est déjà liée a un compte',
+               ),
+           )
+       );
+       $this->form_validation->set_rules($config);
+       if ($this->form_validation->run())
+       {
+           $this->load->database();
+           $data = array(   'email' => $this->input->post('email'),
+                            'password' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+                            'date' => time()
+           );
+           $this->db->insert('utilisateur', $data);
+           redirect('/user/login/');
+       }
+       $this->load->view('register');
+    }
+    public function userNotExists($email) {
+       $user = $this->User_Model->getByEmail($email);
+       return empty($user);
+    }
 }
